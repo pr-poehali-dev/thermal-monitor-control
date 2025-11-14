@@ -35,6 +35,22 @@ export default function Index() {
     cpuInfoSize: 100,
     fontFamily: 'Rubik',
   });
+  
+  const [enabledWidgets, setEnabledWidgets] = useState({
+    clock: true,
+    date: true,
+    cpuTemp: true,
+    cpuLoad: true,
+    cpuFreq: true,
+  });
+  
+  const [widgetColors, setWidgetColors] = useState({
+    clockColor: '#374151',
+    dateColor: '#4b5563',
+    cpuColor: '#374151',
+  });
+  
+  const [customBackground, setCustomBackground] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -102,36 +118,58 @@ export default function Index() {
               <div 
                 className="relative w-full aspect-[3/2] rounded-lg overflow-hidden border-4 border-muted shadow-lg"
                 style={{ 
-                  background: `linear-gradient(to bottom, ${themes[selectedTheme - 1].colors[0]}, ${themes[selectedTheme - 1].colors[1]})`,
+                  background: customBackground 
+                    ? `url(${customBackground}) center/cover` 
+                    : `linear-gradient(to bottom, ${themes[selectedTheme - 1].colors[0]}, ${themes[selectedTheme - 1].colors[1]})`,
                 }}
               >
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-4" style={{ fontFamily: widgetSettings.fontFamily }}>
-                  <div 
-                    className="font-bold text-gray-700 mb-2 transition-all"
-                    style={{ fontSize: `${(widgetSettings.clockSize / 100) * 3}rem` }}
-                  >
-                    {formatTime(time)}
-                  </div>
-                  <div 
-                    className="text-gray-600 mb-4 transition-all"
-                    style={{ fontSize: `${(widgetSettings.dateSize / 100) * 1.125}rem` }}
-                  >
-                    {formatDate(time)} {getDayOfWeek(time)}
-                  </div>
-                  <div className="w-full mt-2 pt-4 border-t-2 border-gray-400">
+                  {enabledWidgets.clock && (
                     <div 
-                      className="text-gray-600 mb-1 transition-all"
-                      style={{ fontSize: `${(widgetSettings.cpuInfoSize / 100) * 0.875}rem` }}
+                      className="font-bold mb-2 transition-all"
+                      style={{ 
+                        fontSize: `${(widgetSettings.clockSize / 100) * 3}rem`,
+                        color: widgetColors.clockColor
+                      }}
                     >
-                      CPU
+                      {formatTime(time)}
                     </div>
+                  )}
+                  {enabledWidgets.date && (
                     <div 
-                      className="font-semibold text-gray-700 transition-all"
-                      style={{ fontSize: `${(widgetSettings.cpuInfoSize / 100) * 1.5}rem` }}
+                      className="mb-4 transition-all"
+                      style={{ 
+                        fontSize: `${(widgetSettings.dateSize / 100) * 1.125}rem`,
+                        color: widgetColors.dateColor
+                      }}
                     >
-                      {Math.round(cpuTemp)}°C {Math.round(cpuLoad)}% {Math.round(cpuFreq)}MHz
+                      {formatDate(time)} {getDayOfWeek(time)}
                     </div>
-                  </div>
+                  )}
+                  {(enabledWidgets.cpuTemp || enabledWidgets.cpuLoad || enabledWidgets.cpuFreq) && (
+                    <div className="w-full mt-2 pt-4 border-t-2 border-gray-400">
+                      <div 
+                        className="mb-1 transition-all"
+                        style={{ 
+                          fontSize: `${(widgetSettings.cpuInfoSize / 100) * 0.875}rem`,
+                          color: widgetColors.cpuColor
+                        }}
+                      >
+                        CPU
+                      </div>
+                      <div 
+                        className="font-semibold transition-all"
+                        style={{ 
+                          fontSize: `${(widgetSettings.cpuInfoSize / 100) * 1.5}rem`,
+                          color: widgetColors.cpuColor
+                        }}
+                      >
+                        {enabledWidgets.cpuTemp && `${Math.round(cpuTemp)}°C `}
+                        {enabledWidgets.cpuLoad && `${Math.round(cpuLoad)}% `}
+                        {enabledWidgets.cpuFreq && `${Math.round(cpuFreq)}MHz`}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>
@@ -259,17 +297,55 @@ export default function Index() {
                     ))}
                   </div>
 
-                  <div className="mt-6 pt-6 border-t border-border">
-                    <h4 className="font-semibold mb-3">Текущая тема: {themes[selectedTheme - 1].name}</h4>
-                    <div className="flex gap-2">
-                      <Button variant="outline" className="flex-1">
-                        <Icon name="Upload" size={16} className="mr-2" />
-                        Импорт
-                      </Button>
-                      <Button variant="outline" className="flex-1">
-                        <Icon name="Download" size={16} className="mr-2" />
-                        Экспорт
-                      </Button>
+                  <div className="mt-6 pt-6 border-t border-border space-y-4">
+                    <div>
+                      <h4 className="font-semibold mb-3">Текущая тема: {themes[selectedTheme - 1].name}</h4>
+                      <div className="flex gap-2">
+                        <Button variant="outline" className="flex-1">
+                          <Icon name="Upload" size={16} className="mr-2" />
+                          Импорт
+                        </Button>
+                        <Button variant="outline" className="flex-1">
+                          <Icon name="Download" size={16} className="mr-2" />
+                          Экспорт
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold mb-3">Свой фон</h4>
+                      <div className="flex gap-2">
+                        <label className="flex-1">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => setCustomBackground(ev.target?.result as string);
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                          <Button variant="outline" className="w-full" asChild>
+                            <span>
+                              <Icon name="ImagePlus" size={16} className="mr-2" />
+                              Загрузить фото
+                            </span>
+                          </Button>
+                        </label>
+                        {customBackground && (
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => setCustomBackground(null)}
+                          >
+                            <Icon name="Trash2" size={16} />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -283,6 +359,115 @@ export default function Index() {
                   </div>
 
                   <div className="space-y-6">
+                    <div className="bg-secondary/30 p-4 rounded-lg space-y-3">
+                      <h4 className="font-semibold flex items-center gap-2">
+                        <Icon name="Eye" size={16} className="text-primary" />
+                        Видимость виджетов
+                      </h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        <Button
+                          variant={enabledWidgets.clock ? "default" : "outline"}
+                          onClick={() => setEnabledWidgets(prev => ({ ...prev, clock: !prev.clock }))}
+                          className="justify-start"
+                        >
+                          <Icon name={enabledWidgets.clock ? "Check" : "Plus"} size={16} className="mr-2" />
+                          Часы
+                        </Button>
+                        <Button
+                          variant={enabledWidgets.date ? "default" : "outline"}
+                          onClick={() => setEnabledWidgets(prev => ({ ...prev, date: !prev.date }))}
+                          className="justify-start"
+                        >
+                          <Icon name={enabledWidgets.date ? "Check" : "Plus"} size={16} className="mr-2" />
+                          Дата
+                        </Button>
+                        <Button
+                          variant={enabledWidgets.cpuTemp ? "default" : "outline"}
+                          onClick={() => setEnabledWidgets(prev => ({ ...prev, cpuTemp: !prev.cpuTemp }))}
+                          className="justify-start"
+                        >
+                          <Icon name={enabledWidgets.cpuTemp ? "Check" : "Plus"} size={16} className="mr-2" />
+                          Температура
+                        </Button>
+                        <Button
+                          variant={enabledWidgets.cpuLoad ? "default" : "outline"}
+                          onClick={() => setEnabledWidgets(prev => ({ ...prev, cpuLoad: !prev.cpuLoad }))}
+                          className="justify-start"
+                        >
+                          <Icon name={enabledWidgets.cpuLoad ? "Check" : "Plus"} size={16} className="mr-2" />
+                          Загрузка
+                        </Button>
+                        <Button
+                          variant={enabledWidgets.cpuFreq ? "default" : "outline"}
+                          onClick={() => setEnabledWidgets(prev => ({ ...prev, cpuFreq: !prev.cpuFreq }))}
+                          className="justify-start col-span-2"
+                        >
+                          <Icon name={enabledWidgets.cpuFreq ? "Check" : "Plus"} size={16} className="mr-2" />
+                          Частота CPU
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="bg-secondary/30 p-4 rounded-lg space-y-3">
+                      <h4 className="font-semibold flex items-center gap-2">
+                        <Icon name="Palette" size={16} className="text-primary" />
+                        Цвета виджетов
+                      </h4>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm mb-2 block">Цвет часов</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="color"
+                              value={widgetColors.clockColor}
+                              onChange={(e) => setWidgetColors(prev => ({ ...prev, clockColor: e.target.value }))}
+                              className="w-12 h-10 rounded border border-border cursor-pointer"
+                            />
+                            <input
+                              type="text"
+                              value={widgetColors.clockColor}
+                              onChange={(e) => setWidgetColors(prev => ({ ...prev, clockColor: e.target.value }))}
+                              className="flex-1 px-3 py-2 bg-background border border-border rounded text-sm"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-sm mb-2 block">Цвет даты</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="color"
+                              value={widgetColors.dateColor}
+                              onChange={(e) => setWidgetColors(prev => ({ ...prev, dateColor: e.target.value }))}
+                              className="w-12 h-10 rounded border border-border cursor-pointer"
+                            />
+                            <input
+                              type="text"
+                              value={widgetColors.dateColor}
+                              onChange={(e) => setWidgetColors(prev => ({ ...prev, dateColor: e.target.value }))}
+                              className="flex-1 px-3 py-2 bg-background border border-border rounded text-sm"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-sm mb-2 block">Цвет CPU</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="color"
+                              value={widgetColors.cpuColor}
+                              onChange={(e) => setWidgetColors(prev => ({ ...prev, cpuColor: e.target.value }))}
+                              className="w-12 h-10 rounded border border-border cursor-pointer"
+                            />
+                            <input
+                              type="text"
+                              value={widgetColors.cpuColor}
+                              onChange={(e) => setWidgetColors(prev => ({ ...prev, cpuColor: e.target.value }))}
+                              className="flex-1 px-3 py-2 bg-background border border-border rounded text-sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     <div>
                       <label className="text-sm font-medium mb-3 block">Размер часов</label>
                       <div className="flex items-center gap-4">
@@ -354,11 +539,15 @@ export default function Index() {
                     <div className="pt-4 border-t border-border">
                       <Button 
                         variant="outline"
-                        onClick={() => setWidgetSettings({ clockSize: 100, dateSize: 100, cpuInfoSize: 100, fontFamily: 'Rubik' })}
+                        onClick={() => {
+                          setWidgetSettings({ clockSize: 100, dateSize: 100, cpuInfoSize: 100, fontFamily: 'Rubik' });
+                          setEnabledWidgets({ clock: true, date: true, cpuTemp: true, cpuLoad: true, cpuFreq: true });
+                          setWidgetColors({ clockColor: '#374151', dateColor: '#4b5563', cpuColor: '#374151' });
+                        }}
                         className="w-full"
                       >
                         <Icon name="RotateCcw" size={16} className="mr-2" />
-                        Сбросить настройки
+                        Сбросить все настройки виджетов
                       </Button>
                     </div>
                   </div>
