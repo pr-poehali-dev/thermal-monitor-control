@@ -7,11 +7,16 @@ import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 
 const themes = [
-  { id: 1, name: 'Theme1', colors: ['#86efac', '#fef9c3'] },
-  { id: 2, name: 'Theme2', colors: ['#fef08a', '#fef9c3'] },
-  { id: 3, name: 'Theme3', colors: ['#fdba74', '#fef9c3'] },
-  { id: 4, name: 'Theme4', colors: ['#fca5a5', '#fef9c3'] },
-  { id: 5, name: 'Theme5', colors: ['#67e8f9', '#fef9c3'] },
+  { id: 1, name: 'Sakura Dream', colors: ['#ffb7d5', '#fff0f6'], emoji: '🌸' },
+  { id: 2, name: 'Ocean Blue', colors: ['#93c5fd', '#dbeafe'], emoji: '🌊' },
+  { id: 3, name: 'Sunset Orange', colors: ['#fdba74', '#fed7aa'], emoji: '🌅' },
+  { id: 4, name: 'Neon Purple', colors: ['#c084fc', '#e9d5ff'], emoji: '💜' },
+  { id: 5, name: 'Mint Fresh', colors: ['#86efac', '#dcfce7'], emoji: '🍃' },
+  { id: 6, name: 'Lavender Sky', colors: ['#d8b4fe', '#f3e8ff'], emoji: '🦋' },
+  { id: 7, name: 'Coral Reef', colors: ['#fb923c', '#ffedd5'], emoji: '🪸' },
+  { id: 8, name: 'Night City', colors: ['#818cf8', '#312e81'], emoji: '🌃' },
+  { id: 9, name: 'Cherry Blossom', colors: ['#f9a8d4', '#fce7f3'], emoji: '🌺' },
+  { id: 10, name: 'Electric Teal', colors: ['#2dd4bf', '#99f6e4'], emoji: '⚡' },
 ];
 
 export default function Index() {
@@ -200,7 +205,7 @@ export default function Index() {
                     <h3 className="text-xl font-semibold">Цветовые схемы</h3>
                   </div>
                   
-                  <div className="grid grid-cols-5 gap-4">
+                  <div className="grid grid-cols-5 gap-4 mb-4">
                     {themes.map((theme) => (
                       <button
                         key={theme.id}
@@ -213,15 +218,18 @@ export default function Index() {
                         }}
                       >
                         <div className="absolute inset-0 flex flex-col items-center justify-center p-2">
+                          <div className="text-2xl mb-1">{theme.emoji}</div>
                           <div className="text-xs font-semibold text-gray-700 mb-1">21:31</div>
-                          <div className="text-[8px] text-gray-600">05/17</div>
-                          <div className="text-[6px] text-gray-600 mt-1">CPU 49°C 2%</div>
+                          <div className="text-[8px] text-gray-600">CPU 49°C</div>
                         </div>
                         {selectedTheme === theme.id && (
                           <div className="absolute top-1 right-1 bg-primary rounded-full p-1">
                             <Icon name="Check" size={12} className="text-primary-foreground" />
                           </div>
                         )}
+                        <div className="absolute bottom-1 left-0 right-0 text-center">
+                          <div className="text-[8px] font-medium text-gray-700 px-1 truncate">{theme.name}</div>
+                        </div>
                       </button>
                     ))}
                   </div>
