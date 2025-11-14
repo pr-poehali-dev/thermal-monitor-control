@@ -28,6 +28,13 @@ export default function Index() {
   const [rotation, setRotation] = useState('0');
   const [refreshRate, setRefreshRate] = useState('60');
   const [time, setTime] = useState(new Date());
+  
+  const [widgetSettings, setWidgetSettings] = useState({
+    clockSize: 100,
+    dateSize: 100,
+    cpuInfoSize: 100,
+    fontFamily: 'Rubik',
+  });
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -98,16 +105,30 @@ export default function Index() {
                   background: `linear-gradient(to bottom, ${themes[selectedTheme - 1].colors[0]}, ${themes[selectedTheme - 1].colors[1]})`,
                 }}
               >
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-                  <div className="text-5xl font-bold text-gray-700 mb-2">
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-4" style={{ fontFamily: widgetSettings.fontFamily }}>
+                  <div 
+                    className="font-bold text-gray-700 mb-2 transition-all"
+                    style={{ fontSize: `${(widgetSettings.clockSize / 100) * 3}rem` }}
+                  >
                     {formatTime(time)}
                   </div>
-                  <div className="text-lg text-gray-600 mb-4">
+                  <div 
+                    className="text-gray-600 mb-4 transition-all"
+                    style={{ fontSize: `${(widgetSettings.dateSize / 100) * 1.125}rem` }}
+                  >
                     {formatDate(time)} {getDayOfWeek(time)}
                   </div>
                   <div className="w-full mt-2 pt-4 border-t-2 border-gray-400">
-                    <div className="text-sm text-gray-600 mb-1">CPU</div>
-                    <div className="text-2xl font-semibold text-gray-700">
+                    <div 
+                      className="text-gray-600 mb-1 transition-all"
+                      style={{ fontSize: `${(widgetSettings.cpuInfoSize / 100) * 0.875}rem` }}
+                    >
+                      CPU
+                    </div>
+                    <div 
+                      className="font-semibold text-gray-700 transition-all"
+                      style={{ fontSize: `${(widgetSettings.cpuInfoSize / 100) * 1.5}rem` }}
+                    >
                       {Math.round(cpuTemp)}°C {Math.round(cpuLoad)}% {Math.round(cpuFreq)}MHz
                     </div>
                   </div>
@@ -118,7 +139,7 @@ export default function Index() {
 
           <div className="lg:col-span-2">
             <Tabs defaultValue="monitor" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-6 bg-card border border-border">
+              <TabsList className="grid w-full grid-cols-4 mb-6 bg-card border border-border">
                 <TabsTrigger value="monitor" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Icon name="Activity" size={16} className="mr-2" />
                   Мониторинг
@@ -126,6 +147,10 @@ export default function Index() {
                 <TabsTrigger value="themes" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Icon name="Palette" size={16} className="mr-2" />
                   Темы
+                </TabsTrigger>
+                <TabsTrigger value="widgets" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <Icon name="Layout" size={16} className="mr-2" />
+                  Виджеты
                 </TabsTrigger>
                 <TabsTrigger value="settings" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Icon name="Settings" size={16} className="mr-2" />
@@ -244,6 +269,96 @@ export default function Index() {
                       <Button variant="outline" className="flex-1">
                         <Icon name="Download" size={16} className="mr-2" />
                         Экспорт
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="widgets" className="space-y-4 animate-fade-in">
+                <Card className="p-6 border-border bg-card">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Icon name="Layout" className="text-primary" size={24} />
+                    <h3 className="text-xl font-semibold">Настройка виджетов</h3>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div>
+                      <label className="text-sm font-medium mb-3 block">Размер часов</label>
+                      <div className="flex items-center gap-4">
+                        <Icon name="Clock" size={20} className="text-muted-foreground" />
+                        <Slider
+                          value={[widgetSettings.clockSize]}
+                          onValueChange={(val) => setWidgetSettings(prev => ({ ...prev, clockSize: val[0] }))}
+                          min={50}
+                          max={150}
+                          step={5}
+                          className="flex-1"
+                        />
+                        <span className="text-sm font-semibold w-12 text-right">{widgetSettings.clockSize}%</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-3 block">Размер даты</label>
+                      <div className="flex items-center gap-4">
+                        <Icon name="Calendar" size={20} className="text-muted-foreground" />
+                        <Slider
+                          value={[widgetSettings.dateSize]}
+                          onValueChange={(val) => setWidgetSettings(prev => ({ ...prev, dateSize: val[0] }))}
+                          min={50}
+                          max={150}
+                          step={5}
+                          className="flex-1"
+                        />
+                        <span className="text-sm font-semibold w-12 text-right">{widgetSettings.dateSize}%</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-3 block">Размер информации CPU</label>
+                      <div className="flex items-center gap-4">
+                        <Icon name="Cpu" size={20} className="text-muted-foreground" />
+                        <Slider
+                          value={[widgetSettings.cpuInfoSize]}
+                          onValueChange={(val) => setWidgetSettings(prev => ({ ...prev, cpuInfoSize: val[0] }))}
+                          min={50}
+                          max={150}
+                          step={5}
+                          className="flex-1"
+                        />
+                        <span className="text-sm font-semibold w-12 text-right">{widgetSettings.cpuInfoSize}%</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-3 block">Шрифт виджетов</label>
+                      <Select 
+                        value={widgetSettings.fontFamily} 
+                        onValueChange={(val) => setWidgetSettings(prev => ({ ...prev, fontFamily: val }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Rubik">Rubik (по умолчанию)</SelectItem>
+                          <SelectItem value="Roboto">Roboto</SelectItem>
+                          <SelectItem value="Open Sans">Open Sans</SelectItem>
+                          <SelectItem value="Montserrat">Montserrat</SelectItem>
+                          <SelectItem value="Oswald">Oswald</SelectItem>
+                          <SelectItem value="monospace">Monospace</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="pt-4 border-t border-border">
+                      <Button 
+                        variant="outline"
+                        onClick={() => setWidgetSettings({ clockSize: 100, dateSize: 100, cpuInfoSize: 100, fontFamily: 'Rubik' })}
+                        className="w-full"
+                      >
+                        <Icon name="RotateCcw" size={16} className="mr-2" />
+                        Сбросить настройки
                       </Button>
                     </div>
                   </div>
